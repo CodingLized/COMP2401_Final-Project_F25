@@ -21,6 +21,19 @@
 #define DEFAULT_GHOST_ID 68057
 
 typedef unsigned char EvidenceByte; // Just giving a helpful name to unsigned char for evidence bitmasks
+typedef enum EvidenceType EvidenceType;
+typedef enum GhostType GhostType;
+typedef enum LogReason LogReason;
+typedef struct Room Room;
+typedef struct RoomStack RoomStack;
+typedef struct RoomNode RoomNode;
+typedef struct CaseFile CaseFile;
+typedef struct Ghost Ghost;
+typedef struct House House;
+typedef struct Hunter Hunter;
+typedef struct HunterCollection HunterCollection;
+
+
 
 enum LogReason {
     LR_EVIDENCE = 0,
@@ -73,16 +86,62 @@ struct CaseFile {
 
 // Implement here based on the requirements, should all be allocated to the House structure
 struct Room {
+    char name[MAX_ROOM_NAME];
+    Room* connected_rooms[MAX_CONNECTIONS];
+    int connections_no;
+    Hunter* hunters[MAX_ROOM_OCCUPANCY];
+    int hunter_no;
+    bool isExit;
+    EvidenceByte evidence;
+    sem_t mutex;
+
+};
+
+struct RoomStack {
+    RoomNode* top;
+};
+
+struct RoomNode {
+    Room* data;
+    RoomNode* previous;
 };
 
 // Implement here based on the requirements, should be allocated to the House structure
 struct Ghost {
-
+    int id;
+    GhostType type;
+    Room *room;
+    int boredom;
+    bool hasExited;
 };
+
+struct Hunter {
+    char name[MAX_HUNTER_NAME];
+    int id;
+    Room* curr_room;
+    CaseFile* case_file;
+    EvidenceType device_type;
+    RoomStack trail;
+    int fear;
+    int boredom;
+    LogReason exit_reason;
+    bool hasExited;
+};
+
+struct HunterCollection {
+    Hunter* hunters;
+    int size;
+};
+
 
 // Can be either stack or heap allocated
 struct House {
-    struct Room* starting_room; // Needed by house_populate_rooms, but can be adjusted to suit your needs.
+    Room* starting_room; // Needed by house_populate_rooms, but can be adjusted to suit your needs.
+    Room rooms[MAX_ROOMS];
+    int size;
+    HunterCollection hunters;
+    CaseFile case_file;
+    Ghost ghost;
 };
 
 /* The provided `house_populate_rooms()` function requires the following functions.
@@ -90,7 +149,33 @@ struct House {
    as needed as long as the house has the correct rooms and connections after calling it.
 */
 
-void room_init(struct Room* room, const char* name, bool is_exit);
-void rooms_connect(struct Room* a, struct Room* b); // Bidirectional connection
+void room_init(Room* room, const char* name, bool is_exit);
+void rooms_connect(Room* a, Room* b); // Bidirectional connection
+
+//Initializers
+void ghost_init(Ghost* ghost, int id, GhostType type, Room* room);
+void* hunter_collection_init(HunterCollection* hc);
+void* hunter_init(Hunter* hunter, const char* name, int id, EvidenceType device_type);
+
+
+//Ghost Behaviour
+void ghost_check_hunter(Ghost* ghost);
+void ghost_take_action(Ghost* ghost);
+void ghost_haunt(Ghost* ghost);
+void ghost_exit(Ghost* ghost);
+void ghost_move(Ghost* ghost);
+
+//Hunter Behaviour
+void hunter_check_ghost(Hunter* hunter);
+void hunter_check_exited(Hunter* hunter);
+void hunter_check_victory(Hunter* hunter);
+void hunter_check_emotions(Hunter* hunter);
+void hunter_check_evidence(Hunter* hunter);
+void hunter_move(Hunter* hunter);  
+void hunter_exit(Hunter* hunter);
+
+//Heap Cleanup
+void hunter_collection_cleanup(HunterCollection* hc);
+void hunter_cleanup(Hunter* hunter);
 
 #endif // DEFS_H
