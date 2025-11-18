@@ -1,15 +1,18 @@
-OBJECT_FILES = main.o ghosts.o hunters.o helpers.o
+OBJECT_FILES = main.o ghosts.o hunters.o house.o helpers.o 
 HEADER_FILES = defs.h helpers.h
 
-all: main ghosts hunters helpers
+
+all: main ghosts hunters house helpers
 	gcc $(OBJECT_FILES) -o finalProject
-main: main.c ghosts hunters helpers
+main: main.c $(HEADER_FILES)
 	gcc -c main.c
-ghosts: ghosts.c helpers defs.h
+ghosts: ghosts.c $(HEADER_FILES)
 	gcc -c ghosts.c
-hunters: hunters.c helpers defs.h
+hunters: hunters.c $(HEADER_FILES)
 	gcc -c hunters.c
-helpers: helpers.c helpers.h
-	gcc -c helpers.c
+house: house.c $(HEADER_FILES)
+	gcc -c house.c
+helpers: helpers.c $(HEADER_FILES)
+	gcc -c helpers.c 
 clean:
-	rm *.o *~ 
+	rm -f $(OBJECT_FILES) finalProject

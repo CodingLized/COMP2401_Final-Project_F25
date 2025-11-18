@@ -138,7 +138,7 @@ struct HunterCollection {
 struct House {
     Room* starting_room; // Needed by house_populate_rooms, but can be adjusted to suit your needs.
     Room rooms[MAX_ROOMS];
-    int size;
+    int room_count;
     HunterCollection hunters;
     CaseFile case_file;
     Ghost ghost;

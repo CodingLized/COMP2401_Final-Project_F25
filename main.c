@@ -45,7 +45,7 @@ int main() {
         if(fgets(hunter_name, MAX_HUNTER_NAME, stdin) == NULL){
             printf("\nInput cannot be blank.\n");
         }
-        else if (strncmp(hunter_name, "done", 5)==0){
+        else if (strncmp(hunter_name, "done", 5)==0){//ISSUE: DOES NOT QUIT LOOP WHEN DONE IS TYPED
            break;
         }
         else{
