@@ -153,9 +153,9 @@ void room_init(Room* room, const char* name, bool is_exit);
 void rooms_connect(Room* a, Room* b); // Bidirectional connection
 
 //Initializers
-void ghost_init(Ghost* ghost, int id, GhostType type, Room* room);
+void ghost_init(Ghost* ghost);
 void* hunter_collection_init(HunterCollection* hc);
-void* hunter_init(Hunter* hunter, const char* name, int id, EvidenceType device_type);
+void* hunter_add(House* house, const char* name, int id);
 
 
 //Ghost Behaviour
