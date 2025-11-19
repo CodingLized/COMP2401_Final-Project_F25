@@ -25,6 +25,11 @@ int main() {
     7. Clean up all dynamically allocated resources and call sem_destroy() on all semaphores.
     */
 
+    /*
+    ----ISSUES----
+    
+    
+    */
 
     House house; 
     Ghost ghost;
@@ -41,11 +46,10 @@ int main() {
     //Hunter info input loop
     while(true){  
         printf("Enter hunter name: ");
-        
         if(fgets(hunter_name, MAX_HUNTER_NAME, stdin) == NULL){
             printf("\nInput cannot be blank.\n");
         }
-        else if (strncmp(hunter_name, "done", 5)==0){//ISSUE: DOES NOT QUIT LOOP WHEN DONE IS TYPED
+        else if (strncmp(hunter_name, "done\n", 5)==0){//ISSUE: DOES NOT QUIT LOOP WHEN DONE IS TYPED
            break;
         }
         else{
@@ -57,6 +61,8 @@ int main() {
 
             printf("Enter hunter ID: ");
             scanf("%d", &hunter_id);
+            while(getchar()!='\n');//Clear input buffer
+
             hunter_add(&house, hunter_name, hunter_id);
             printf("Hunter added.\n");
 
