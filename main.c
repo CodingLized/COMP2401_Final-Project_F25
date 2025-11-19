@@ -26,8 +26,24 @@ int main() {
     */
 
     /*
-    ----ISSUES----
+    TODO
+    *Remember to include logging functions
+
+    Main Flow[v]
     
+    Setup[] 
+    -ghost_init[]
+    -hunter_collection_init[]
+    
+    run_single_thread[]
+
+    Display results[]
+    
+    */
+
+    /*
+    ----ISSUES----
+
     
     */
 
@@ -64,15 +80,13 @@ int main() {
             while(getchar()!='\n');//Clear input buffer
 
             hunter_add(&house, hunter_name, hunter_id);
+            //Log hunter init in hunter_add
             printf("Hunter added.\n");
 
         }
         
 
     }
-
-
-    run_single_thread(&house, &ghost);
 
     #ifdef RUN_THREADS
     //Create ghost thread
@@ -81,6 +95,18 @@ int main() {
     
     #endif
 
+
+    #ifndef RUN_THREADS
+
+    run_single_thread(&house, &ghost);
+
+    #endif
+
+    
+
+    display_results(&house);
+
+    hunter_collection_cleanup(&house.hunters);
 
     return 0;
 }
