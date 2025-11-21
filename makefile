@@ -1,35 +1,35 @@
 OBJECT_FILES = main.o ghosts.o hunters.o house.o helpers.o 
 HEADER_FILES = defs.h helpers.h
+W = -Wall
 
-
-all: main ghosts hunters house helpers
-	gcc $(OBJECT_FILES) -o finalProject
+all: $(OBJECT_FILES)
+	gcc -Wall $(OBJECT_FILES) -o finalProject
 all-debug: main-debug ghosts-debug hunters-debug house-debug helpers-debug
-	gcc $(OBJECT_FILES) -o finalProject
+	gcc -Wall $(OBJECT_FILES) -o finalProject
 
-main: main.c $(HEADER_FILES)
-	gcc -c main.c
+main.o: main.c $(HEADER_FILES)
+	gcc -Wall -c main.c
 main-debug: main.c $(HEADER_FILES)
-	gcc -g -c main.c	
+	gcc -Wall -g -c main.c	
 
-ghosts: ghosts.c $(HEADER_FILES)
-	gcc -c ghosts.c
+ghosts.o: ghosts.c $(HEADER_FILES)
+	gcc -Wall -c ghosts.c
 ghosts-debug: ghosts.c $(HEADER_FILES)
-	gcc -g -c ghosts.c	
-hunters: hunters.c $(HEADER_FILES)
-	gcc -c hunters.c
+	gcc -Wall -g -c ghosts.c	
+hunters.o: hunters.c $(HEADER_FILES)
+	gcc -Wall -c hunters.c
 hunters-debug: hunters.c $(HEADER_FILES)
-	gcc -g -c hunters.c	
+	gcc -Wall -g -c hunters.c	
 
-house: house.c $(HEADER_FILES)
-	gcc -c house.c
+house.o: house.c $(HEADER_FILES)
+	gcc -Wall -c house.c
 house-debug: house.c $(HEADER_FILES)
-	gcc -g -c house.c	
+	gcc -Wall -g -c house.c	
 
-helpers: helpers.c $(HEADER_FILES)
-	gcc -c helpers.c 
+helpers.o: helpers.c $(HEADER_FILES)
+	gcc -Wall -c helpers.c 
 helpers-debug: helpers.c $(HEADER_FILES)
-	gcc -g -c helpers.c 	
-	
+	gcc -Wall -g -c helpers.c 	
+
 clean:
 	rm -f $(OBJECT_FILES) finalProject

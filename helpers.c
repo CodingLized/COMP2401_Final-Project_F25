@@ -46,6 +46,44 @@ void house_populate_rooms(struct House* house) {
     house->starting_room = house->rooms; // Van is at index 0
 }
 
+//---- Bit manipulation functions ----
+
+/*
+    Desc: Sets the bit of a byte to 1. The position of the most significant bit is treated as 0 and the 
+          position of the least significant bit is treated as 7
+    in/out byte: A char that represents a byte of data
+    in pos: The position of the bit to be set
+
+    return error code
+*/
+void set_bit(unsigned char* byte, int pos){
+    if(byte == NULL){
+        return;
+    }
+    unsigned char pos_set = 0;
+    pos_set = 1 << (7 - pos);
+    *byte = *byte | pos_set;
+
+}
+
+/*
+    Desc: Reads the bit at position 'pos' of a byte. The position of the most significant bit is treated as 0 and the 
+          position of the least significant bit is treated as 7
+    in byte: A char that represents a byte of data
+    in pos: The position of the bit to be read
+
+    return error code
+
+*/
+int get_bit(const unsigned char* byte, int pos){
+    if(byte == NULL){
+        return -1;
+    }
+    return (int)(*byte & (1 << (7 - pos))) >> (7 - pos);
+}
+
+
+
 // ---- to_string functions ----
 const char* evidence_to_string(enum EvidenceType evidence) {
     switch (evidence) {

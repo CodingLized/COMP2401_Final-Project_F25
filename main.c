@@ -6,7 +6,7 @@
 #include "helpers.h"
 
 //#define RUN_THREADS 1
-
+#define TEST
 static void get_hunter_info(Hunter* h);
 static void run_single_thread(House* house, Ghost* ghost);
 
@@ -31,11 +31,17 @@ int main() {
 
     Main Flow[v]
     
-    Setup[] 
-    -ghost_init[]
+    Setup[]
+    -room_init[]
+    -rooms_connect[] 
+    -ghost_init[v] *Testing needed
     -hunter_collection_init[]
     
     run_single_thread[]
+
+    ghost_thread[]
+
+    hunter_threads[]
 
     Display results[]
     
@@ -53,9 +59,10 @@ int main() {
     char hunter_name[MAX_HUNTER_NAME];
     int hunter_id; 
     
+    #ifndef TEST
     //Set up
     house_populate_rooms(&house);
-    ghost_init(&ghost); 
+    ghost_init(&ghost, &house); 
     hunter_collection_init(&house.hunters);
 
 
@@ -104,11 +111,13 @@ int main() {
 
     
 
-    display_results(&house);
+    //display_results(&house);
 
     hunter_collection_cleanup(&house.hunters);
+#endif
 
     return 0;
+
 }
 
 static void get_hunter_info(Hunter* h){}

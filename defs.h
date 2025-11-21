@@ -91,6 +91,7 @@ struct Room {
     int connections_no;
     Hunter* hunters[MAX_ROOM_OCCUPANCY];
     int hunter_no;
+    Ghost* ghost;
     bool isExit;
     EvidenceByte evidence;
     sem_t mutex;
@@ -149,11 +150,16 @@ struct House {
    as needed as long as the house has the correct rooms and connections after calling it.
 */
 
+
+void set_bit(unsigned char* byte, int pos);
+int get_bit(const unsigned char* byte, int pos);
+
+
 void room_init(Room* room, const char* name, bool is_exit);
 void rooms_connect(Room* a, Room* b); // Bidirectional connection
 
 //Initializers
-void ghost_init(Ghost* ghost);
+void ghost_init(Ghost* ghost, House* house);
 void* hunter_collection_init(HunterCollection* hc);
 void* hunter_add(House* house, const char* name, int id);
 
