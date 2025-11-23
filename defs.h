@@ -130,7 +130,7 @@ struct Hunter {
 };
 
 struct HunterCollection {
-    Hunter* hunters;
+    Hunter* *hunters;
     int size;
 };
 
@@ -140,7 +140,7 @@ struct House {
     Room* starting_room; // Needed by house_populate_rooms, but can be adjusted to suit your needs.
     Room rooms[MAX_ROOMS];
     int room_count;
-    HunterCollection hunters;
+    HunterCollection hunterCollection;
     CaseFile case_file;
     Ghost ghost;
 };
@@ -160,18 +160,20 @@ void rooms_connect(Room* a, Room* b); // Bidirectional connection
 
 //Initializers
 void ghost_init(Ghost* ghost, House* house);
-void* hunter_collection_init(HunterCollection* hc);
-void* hunter_add(House* house, const char* name, int id);
+void hunter_collection_init(HunterCollection* *hc);
+void hunter_init(House* house, const char* name, int id);
+void hunter_trail_init(Hunter* hunter);
 
 
-//Ghost Behaviour
+
+//Ghost Functions
 void ghost_check_hunter(Ghost* ghost);
 void ghost_take_action(Ghost* ghost);
 void ghost_haunt(Ghost* ghost);
 void ghost_exit(Ghost* ghost);
 void ghost_move(Ghost* ghost);
 
-//Hunter Behaviour
+//Hunter Functions
 void hunter_check_ghost(Hunter* hunter);
 void hunter_check_exited(Hunter* hunter);
 void hunter_check_victory(Hunter* hunter);
@@ -180,8 +182,15 @@ void hunter_check_evidence(Hunter* hunter);
 void hunter_move(Hunter* hunter);  
 void hunter_exit(Hunter* hunter);
 
+void select_rand_device(EvidenceType* device);
+
+void hunter_trail_push(Hunter* hunter);
+void hunter_trail_pop(Hunter* hunter);
+
+void hunter_collection_add(Hunter* hunter, House* house);
+
 //Heap Cleanup
 void hunter_collection_cleanup(HunterCollection* hc);
-void hunter_cleanup(Hunter* hunter);
+
 
 #endif // DEFS_H

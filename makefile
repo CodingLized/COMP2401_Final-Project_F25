@@ -1,6 +1,6 @@
-OBJECT_FILES = main.o ghosts.o hunters.o house.o helpers.o 
+OBJECT_FILES = main.o ghosts.o hunters.o house.o helpers.o
 HEADER_FILES = defs.h helpers.h
-W = -Wall
+
 
 all: $(OBJECT_FILES)
 	gcc -Wall $(OBJECT_FILES) -o finalProject
@@ -32,4 +32,4 @@ helpers-debug: helpers.c $(HEADER_FILES)
 	gcc -Wall -g -c helpers.c 	
 
 clean:
-	rm -f $(OBJECT_FILES) finalProject
+	rm -f *.csv $(OBJECT_FILES) finalProject 

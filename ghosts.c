@@ -1,10 +1,16 @@
 
 #include "defs.h"
 #include "helpers.h"
+#include <stdio.h>
 
+/**
+ * @brief Initialize a ghost structure and add it to the house
+ * @param[in] house The house that the ghost will be added to
+ * @param[out] ghost A pointer to the ghost structure to be initialized
+ */
 void ghost_init(Ghost* ghost, House* house){
     //Set ghost type to a random type
-    enum GhostType *type_list;
+    const enum GhostType *type_list;
     int type_list_size = get_all_ghost_types(&type_list);
 
     enum GhostType new_type = type_list[rand_int_threadsafe(0, type_list_size)];
@@ -21,8 +27,8 @@ void ghost_init(Ghost* ghost, House* house){
 
     ghost->boredom = 0;
 
-    log_ghost_init(ghost->id, ghost->room, ghost->type);
-    printf("%s type ghost appeared in %s\n", ghost_to_string(ghost->type));
+    log_ghost_init(ghost->id, ghost->room->name, ghost->type);
+    printf("%s type ghost appeared in %s\n", ghost_to_string(ghost->type), ghost->room->name);
 
 
 }

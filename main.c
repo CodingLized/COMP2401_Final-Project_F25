@@ -6,7 +6,7 @@
 #include "helpers.h"
 
 //#define RUN_THREADS 1
-#define TEST
+//#define TEST
 static void get_hunter_info(Hunter* h);
 static void run_single_thread(House* house, Ghost* ghost);
 
@@ -32,9 +32,9 @@ int main() {
     Main Flow[v]
     
     Setup[]
-    -room_init[]
-    -rooms_connect[] 
-    -ghost_init[v] *Testing needed
+    -room_init[v]
+    -rooms_connect[v] 
+    -ghost_init[v]
     -hunter_collection_init[]
     
     run_single_thread[]
@@ -49,21 +49,24 @@ int main() {
 
     /*
     ----ISSUES----
-
+    -Segmentation fault in hunter_collection_cleanup
+        -First two elements in the HunterCollection (index 0 and 1) are unaccessible while index 2 is
+        -Suspects: hunter_collection_add, hunter_collection_init 
     
     */
 
     House house; 
     Ghost ghost;
-    bool user_done = false; 
     char hunter_name[MAX_HUNTER_NAME];
     int hunter_id; 
     
-    #ifndef TEST
+    
     //Set up
     house_populate_rooms(&house);
     ghost_init(&ghost, &house); 
-    hunter_collection_init(&house.hunters);
+    #ifndef TEST
+    HunterCollection* hc = &house.hunterCollection;
+    hunter_collection_init(&hc);
 
 
     //Hunter info input loop
@@ -72,7 +75,7 @@ int main() {
         if(fgets(hunter_name, MAX_HUNTER_NAME, stdin) == NULL){
             printf("\nInput cannot be blank.\n");
         }
-        else if (strncmp(hunter_name, "done\n", 5)==0){//ISSUE: DOES NOT QUIT LOOP WHEN DONE IS TYPED
+        else if (strncmp(hunter_name, "done\n", 5)==0){
            break;
         }
         else{
@@ -86,10 +89,7 @@ int main() {
             scanf("%d", &hunter_id);
             while(getchar()!='\n');//Clear input buffer
 
-            hunter_add(&house, hunter_name, hunter_id);
-            //Log hunter init in hunter_add
-            printf("Hunter added.\n");
-
+            hunter_init(&house, hunter_name, hunter_id);
         }
         
 
@@ -105,7 +105,7 @@ int main() {
 
     #ifndef RUN_THREADS
 
-    run_single_thread(&house, &ghost);
+    //run_single_thread(&house, &ghost);
 
     #endif
 
@@ -113,9 +113,13 @@ int main() {
 
     //display_results(&house);
 
-    hunter_collection_cleanup(&house.hunters);
+    hunter_collection_cleanup(&house.hunterCollection);
 #endif
-
+#ifdef TEST
+    for(int i = 0; i < house.room_count; i++){
+        printf("%s initialized\n", house.rooms[i].name);
+    }
+#endif    
     return 0;
 
 }
