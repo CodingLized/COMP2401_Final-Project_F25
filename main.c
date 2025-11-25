@@ -29,6 +29,9 @@ int main() {
     TODO
     *Remember to include logging functions
 
+    *According to prof, only return to exit when you have evidence
+    If emotions are too high, simply remove pointer from room, store exit reason and flag as done with sim
+
     Main Flow[v]
     
     Setup[]
@@ -38,8 +41,17 @@ int main() {
     -hunter_collection_init[]
     
     run_single_thread[]
+        PLAN
+        -LOOP until ?
+            -Go through each hunter loop
+            -Go through ghost loop
+
+
+
+
 
     ghost_thread[]
+        -Loop until ghost too bored
 
     hunter_threads[]
 
@@ -49,9 +61,7 @@ int main() {
 
     /*
     ----ISSUES----
-    -Segmentation fault in hunter_collection_cleanup
-        -First two elements in the HunterCollection (index 0 and 1) are unaccessible while index 2 is
-        -Suspects: hunter_collection_add, hunter_collection_init 
+    
     
     */
 
@@ -127,5 +137,6 @@ int main() {
 static void get_hunter_info(Hunter* h){}
 
 static void run_single_thread(House* house, Ghost* ghost){
+
 
 }

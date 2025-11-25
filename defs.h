@@ -185,7 +185,7 @@ void hunter_exit(Hunter* hunter);
 void select_rand_device(EvidenceType* device);
 
 void hunter_trail_push(Hunter* hunter);
-void hunter_trail_pop(Hunter* hunter);
+void hunter_trail_pop(Hunter* hunter, Room* *room);
 
 void hunter_collection_add(Hunter* hunter, House* house);
 

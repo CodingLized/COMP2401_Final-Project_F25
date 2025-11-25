@@ -56,7 +56,6 @@ void hunter_collection_add(Hunter* hunter, House* house){
 
     //Increase hunterCollection capacity
     Hunter* *temp = h_collection->hunters;
-    free(h_collection->hunters);
     h_collection->hunters = calloc(h_collection->size+1, sizeof(Hunter*));
     if(h_collection->size > 0){
         for(int i = 0; i < h_collection->size; i++){
@@ -65,6 +64,7 @@ void hunter_collection_add(Hunter* hunter, House* house){
     }
 
     h_collection->hunters[h_collection->size++] = hunter;
+    free(temp);
 }
 
 /**
@@ -86,13 +86,52 @@ void hunter_trail_init(Hunter* hunter){
     hunter->trail.top = NULL;
 }
 
+/**
+ * @brief Adds the current room to the hunter's breadcrumb stack
+ * @param[in,out] hunter A Hunter structure
+ */
 void hunter_trail_push(Hunter* hunter){
+    RoomNode* previous = hunter->trail.top;
+
+    RoomNode* new_node = malloc(sizeof(RoomNode));
+    new_node->data = hunter->curr_room;
+    hunter->trail.top = new_node;
+    new_node->previous = previous;
 
 }
 
-void hunter_trail_pop(Hunter* hunter){
+/**
+ * @brief Removes the room at the top from the hunter's breadcrumb stack and returns it
+ * @param[in,out] hunter A Hunter structure
+ * @param[out] room The address to store the popped room
+ */
+void hunter_trail_pop(Hunter* hunter, Room* *room){
+    RoomNode* popped = hunter->trail.top;
+
+    if(popped == NULL){
+        *room = NULL;
+        return;
+    }
+
+    *room = popped->data;
+    hunter->trail.top = popped->previous;
+    free(popped);
+
 
 }
+
+/**
+ * @brief Clears all nodes from the hunter's breadcrumb stack
+ * @param[in,out] hunter A Hunter structure
+ */
+void hunter_trail_clear(Hunter* hunter){
+    Room* throw_away;
+
+    while(throw_away!=NULL){
+        hunter_trail_pop(hunter, &throw_away);
+    }
+}
+
 
 void hunter_check_ghost(Hunter* hunter){
 
