@@ -17,6 +17,13 @@ void hunter_collection_init(HunterCollection* *hc){
 }
 
 /**
+ * @brief Finds the index of the pointer to a hunter in the hunters current room
+ */
+int get_hunter_index(Hunter* hunter, Room* room){
+
+}
+
+/**
  * @brief Intializes a hunter and adds them to a random room in the house
  * @param[out] house The house the hunter will be added to
  * @param[in] name The name of the hunter
@@ -31,10 +38,11 @@ void hunter_init(House* house, const char* name, int id){
     new_hunter->case_file = &house->case_file;
 
     //Give hunter a random device
-    select_rand_device(&new_hunter->device_type);
+    select_rand_device(&new_hunter);
 
     new_hunter->fear = 0;
     new_hunter->boredom = 0;
+    new_hunter->return_to_exit = false;
     new_hunter->hasExited = false;
 
     hunter_trail_init(new_hunter);
@@ -71,11 +79,15 @@ void hunter_collection_add(Hunter* hunter, House* house){
  * @brief Selects a random device for a hunter
  * @param[out] device The pointer that will capture the random device
  */
-void select_rand_device(EvidenceType* device){
+void select_rand_device(Hunter* hunter){
     const EvidenceType *type_list;
     int type_list_size = get_all_evidence_types(&type_list);
 
-    *device = type_list[rand_int_threadsafe(0, type_list_size)];
+    int device_index = rand_int_threadsafe(0, type_list_size);
+    if(type_list[device_index] == hunter->device_type){//Ensures the same device cannot be selected twice
+        device_index = (device_index + 1) % type_list_size;
+    }
+    hunter->device_type = type_list[device_index];
 }
 
 /**
@@ -132,14 +144,44 @@ void hunter_trail_clear(Hunter* hunter){
     }
 }
 
+/**
+ * @brief Goes through one loop of action for a hunter's turn
+ * @param[in] hunter the Hunter structure that will take action
+ */
+void huntner_take_action(Hunter* hunter){
+    if(hunter_check_ghost(hunter)){
+        hunter->boredom = 0;
+        hunter->fear++;
 
-void hunter_check_ghost(Hunter* hunter){
+    }
+    else{
+        hunter->boredom++;
+    }
+    if(hunter_in_exit(hunter)){
+        hunter->return_to_exit = false;
+        hunter_trail_clear(hunter);
+
+        if(hunter_check_victory(hunter)){
+            hunter_exit_simulation(hunter);
+        }
+        else{
+            select_rand_device(&hunter->device_type);
+        }
+
+    }
+}
+
+bool hunter_check_ghost(Hunter* hunter){
+
+}
+
+bool hunter_in_exit(Hunter* hunter){
 
 }
 void hunter_check_exited(Hunter* hunter){
 
 }
-void hunter_check_victory(Hunter* hunter){
+bool hunter_check_victory(Hunter* hunter){
 
 }
 void hunter_check_emotions(Hunter* hunter){
@@ -151,8 +193,10 @@ void hunter_check_evidence(Hunter* hunter){
 void hunter_move(Hunter* hunter){
 
 }  
-void hunter_exit(Hunter* hunter){
-
+void hunter_exit_simulation(Hunter* hunter){
+    //Remove from room
+    //Log exit reason
+    //Set hasExited to true
 }
 
 /**

@@ -125,6 +125,7 @@ struct Hunter {
     RoomStack trail;
     int fear;
     int boredom;
+    bool return_to_exit;
     LogReason exit_reason;
     bool hasExited;
 };
@@ -153,7 +154,7 @@ struct House {
 
 void set_bit(unsigned char* byte, int pos);
 int get_bit(const unsigned char* byte, int pos);
-
+int get_hunter_index(Hunter* hunter, Room* room);
 
 void room_init(Room* room, const char* name, bool is_exit);
 void rooms_connect(Room* a, Room* b); // Bidirectional connection
@@ -174,15 +175,17 @@ void ghost_exit(Ghost* ghost);
 void ghost_move(Ghost* ghost);
 
 //Hunter Functions
-void hunter_check_ghost(Hunter* hunter);
+void hunter_take_action(Hunter* hunter);
+bool hunter_check_ghost(Hunter* hunter);
+bool hunter_in_exit(Hunter* hunter);
 void hunter_check_exited(Hunter* hunter);
-void hunter_check_victory(Hunter* hunter);
+bool hunter_check_victory(Hunter* hunter);
 void hunter_check_emotions(Hunter* hunter);
 void hunter_check_evidence(Hunter* hunter);
 void hunter_move(Hunter* hunter);  
-void hunter_exit(Hunter* hunter);
+void hunter_exit_simulation(Hunter* hunter);
 
-void select_rand_device(EvidenceType* device);
+void select_rand_device(Hunter* hunter);
 
 void hunter_trail_push(Hunter* hunter);
 void hunter_trail_pop(Hunter* hunter, Room* *room);

@@ -27,25 +27,51 @@ int main() {
 
     /*
     TODO
+
+    TN = Testing needed
+    IP = In progress
+    v = done
+
     *Remember to include logging functions
 
     *According to prof, only return to exit when you have evidence
     If emotions are too high, simply remove pointer from room, store exit reason and flag as done with sim
 
-    Main Flow[v]
+    MAIN FLOW[v]
     
-    Setup[]
+    SETUP[v]
     -room_init[v]
-    -rooms_connect[v] 
+    -rooms_connect[TN]
     -ghost_init[v]
-    -hunter_collection_init[]
+    -hunter_init[v]
+    -hunter_collection_init[TN]
     
+
+    GHOST_FUNCTIONALITY
+
+    HUNTER FUNCTIONALITY
+    -[TN]hunter_trail_push    
+    -[TN]hunter_trail_pop     
+    -[TN]hunter_trail_clear   
+    -[IP]hunter_take_action
+    -[]hunter_check_ghost
+    -[]hunter_in_exit
+    -[]hunter_check_exited
+    -[]hunter_check_victory
+    -[]hunter_check_emotions
+    -[]hunter_check_evidence
+    -[]hunter_move
+    -[]hunter_exit_simulation
+
+
     run_single_thread[]
         PLAN
         -LOOP until ?
             -Go through each hunter loop
             -Go through ghost loop
 
+        -[] Finish hunter_take_action
+        -[] Do ghost_take_action
 
 
 
@@ -137,6 +163,20 @@ int main() {
 static void get_hunter_info(Hunter* h){}
 
 static void run_single_thread(House* house, Ghost* ghost){
+    
+    bool hunters_done = false;
+    bool ghost_done = false;
+
+    while(!hunters_done && !ghost_done){
+        //Go through each hunter action loop
+        for(int i = 0; i < house->hunterCollection.size; i++){
+            hunter_take_action(house->hunterCollection.hunters[i]);
+        }
+        //Check all hunters' hasExited
 
 
+        //Go through ghost loop
+        ghost_take_action(ghost);
+        //Check ghost's hasExited
+    }
 }
