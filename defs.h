@@ -152,8 +152,9 @@ struct House {
 */
 
 
-void set_bit(unsigned char* byte, int pos);
-int get_bit(const unsigned char* byte, int pos);
+void set_bit(EvidenceByte* byte, int pos);
+int get_bit(const EvidenceByte* byte, int pos);
+void clear_bit(EvidenceByte* byte, int pos);
 int get_hunter_index(Hunter* hunter, Room* room);
 
 void room_init(Room* room, const char* name, bool is_exit);
@@ -180,9 +181,9 @@ bool hunter_check_ghost(Hunter* hunter);
 bool hunter_in_exit(Hunter* hunter);
 void hunter_check_exited(Hunter* hunter);
 bool hunter_check_victory(Hunter* hunter);
-void hunter_check_emotions(Hunter* hunter);
-void hunter_check_evidence(Hunter* hunter);
-void hunter_move(Hunter* hunter);  
+bool hunter_check_emotions(Hunter* hunter);
+int hunter_check_evidence(Hunter* hunter);
+void hunter_move(Hunter* hunter, Room* target_room);  
 void hunter_exit_simulation(Hunter* hunter);
 
 void select_rand_device(Hunter* hunter);

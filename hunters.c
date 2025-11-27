@@ -145,10 +145,12 @@ void hunter_trail_clear(Hunter* hunter){
 }
 
 /**
- * @brief Goes through one loop of action for a hunter's turn
+ * @brief Goes through one loop of actions for a hunter's turn
  * @param[in] hunter the Hunter structure that will take action
  */
 void huntner_take_action(Hunter* hunter){
+    //Rmr to check if hunter is still in sim
+    
     if(hunter_check_ghost(hunter)){
         hunter->boredom = 0;
         hunter->fear++;
@@ -165,10 +167,57 @@ void huntner_take_action(Hunter* hunter){
             hunter_exit_simulation(hunter);
         }
         else{
-            select_rand_device(&hunter->device_type);
+            select_rand_device(hunter);
         }
 
+        
     }
+    else{//Review this branch
+        if(hunter_check_emotions(hunter)){
+            hunter_exit_simulation(hunter);
+        }
+        else{
+            int evidence_pos = hunter_check_evidence(hunter);
+            if(evidence_pos > -1){
+                clear_bit(&hunter->curr_room->evidence, evidence_pos);
+                set_bit(&hunter->case_file->collected, evidence_pos);
+                hunter->return_to_exit = true;
+            }
+            else{
+                //A 10% chance that the hunter will return to the exit
+                int chance = rand_int_threadsafe(1, 11);
+                if(chance == 1){
+                    hunter->return_to_exit = true;
+                }
+            }
+        }
+    }
+    if(hunter->return_to_exit){
+        Room *popped_room;
+        hunter_trail_pop(hunter, &popped_room);
+
+        hunter_move(hunter, popped_room); 
+    }
+    else if(!hunter->hasExited){
+        //Select a random connected room
+        int room_index = rand_int_threadsafe(0, hunter->curr_room->connections_no);
+        Room* target_room = hunter->curr_room->connected_rooms[room_index];
+
+        //--Define in move
+        //If target room is full, return (move failed)
+        //Otherwise
+        //      first_mutex = Compare names of target room and curr_room to determine which mutex to wait for
+        //      second_mutex = Other mutex        
+        //      wait_for_mutex(first_mutex) //Code sits here till mutex is unlocked
+        //      lock_mutex(first_mutex)
+        //      wait_for_mutex(second_mutex) //Code sits here till mutex is unlocked
+        //      lock_mutex(second_mutex)
+        //      Remove hunter pointer from curr_room
+        //      Add hunter pointer to target_room
+        //      Set curr_room to target_room      
+        //      Unlock mutexes
+        hunter_move(hunter, target_room);
+    }   
 }
 
 bool hunter_check_ghost(Hunter* hunter){
@@ -184,13 +233,13 @@ void hunter_check_exited(Hunter* hunter){
 bool hunter_check_victory(Hunter* hunter){
 
 }
-void hunter_check_emotions(Hunter* hunter){
+bool hunter_check_emotions(Hunter* hunter){
 
 }
-void hunter_check_evidence(Hunter* hunter){
+bool hunter_check_evidence(Hunter* hunter){
 
 }
-void hunter_move(Hunter* hunter){
+void hunter_move(Hunter* hunter, Room* target_room){
 
 }  
 void hunter_exit_simulation(Hunter* hunter){

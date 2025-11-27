@@ -32,4 +32,6 @@ helpers-debug: helpers.c $(HEADER_FILES)
 	gcc -Wall -g -c helpers.c 	
 
 clean:
+	rm -f $(OBJECT_FILES) finalProject
+clean-full:
 	rm -f *.csv $(OBJECT_FILES) finalProject 

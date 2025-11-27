@@ -56,11 +56,11 @@ void house_populate_rooms(struct House* house) {
 
     return error code
 */
-void set_bit(unsigned char* byte, int pos){
+void set_bit(EvidenceByte* byte, int pos){
     if(byte == NULL){
         return;
     }
-    unsigned char pos_set = 0;
+    EvidenceByte pos_set = 0;
     pos_set = 1 << (7 - pos);
     *byte = *byte | pos_set;
 
@@ -75,13 +75,23 @@ void set_bit(unsigned char* byte, int pos){
     return error code
 
 */
-int get_bit(const unsigned char* byte, int pos){
+int get_bit(const EvidenceByte* byte, int pos){
     if(byte == NULL){
         return -1;
     }
     return (int)(*byte & (1 << (7 - pos))) >> (7 - pos);
 }
 
+/**
+ * @brief Clears the bit at a particular position. The position of the most significant bit is treated as 0 and the 
+ *   position of the least significant bit is treated as 7
+ * @param[in,out] byte A char that represents a byte of data
+ * @param[in] pos The position of the bit to be clear
+ */
+
+void clear_bit(EvidenceByte* byte, int pos){
+    *byte = *byte & (~(1 << pos));
+}
 
 
 // ---- to_string functions ----

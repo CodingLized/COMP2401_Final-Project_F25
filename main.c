@@ -32,10 +32,16 @@ int main() {
     IP = In progress
     v = done
 
+
+    --NOTES--
     *Remember to include logging functions
 
     *According to prof, only return to exit when you have evidence
     If emotions are too high, simply remove pointer from room, store exit reason and flag as done with sim
+
+    *Use Assignment 1 functions for sorting
+    *Assignment 2 for handling pointer stuff
+    *A4 potentially for dynamic array stuff
 
     MAIN FLOW[v]
     
@@ -71,6 +77,8 @@ int main() {
             -Go through ghost loop
 
         -[] Finish hunter_take_action
+            -[] Check whether hunter has exited before taking action
+            -[] Test checking of whether all hunters are done
         -[] Do ghost_take_action
 
 
@@ -82,6 +90,9 @@ int main() {
     hunter_threads[]
 
     Display results[]
+
+    -[]CLEANUP
+        -Destroy semaphores
     
     */
 
@@ -170,10 +181,19 @@ static void run_single_thread(House* house, Ghost* ghost){
     while(!hunters_done && !ghost_done){
         //Go through each hunter action loop
         for(int i = 0; i < house->hunterCollection.size; i++){
+            //Check hunter running
             hunter_take_action(house->hunterCollection.hunters[i]);
+            
         }
         //Check all hunters' hasExited
-
+        for(int i = 0; i < house->hunterCollection.size; i++){ //TEST
+            if(hunters_done){
+                hunters_done = hunters_done && house->hunterCollection.hunters[i]->hasExited;
+            }
+            else{
+                hunters_done = !hunters_done && house->hunterCollection.hunters[i]->hasExited;
+            }
+        }
 
         //Go through ghost loop
         ghost_take_action(ghost);
