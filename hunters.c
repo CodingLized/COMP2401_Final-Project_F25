@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
 /**
  * @brief Initializes a dynamic array of hunters
  * @param[out] hc The dynamic hunter array to be initialized
@@ -150,7 +151,7 @@ void hunter_trail_clear(Hunter* hunter){
  */
 void hunter_take_action(Hunter* hunter){
     //Rmr to check if hunter is still in sim
-    
+    printf("Hunter %s [Fear=%d, Boredom=%d, Room=%s]\n", hunter->name, hunter->fear, hunter->boredom, hunter->curr_room->name);
     if(hunter_check_ghost(hunter)){
         hunter->boredom = 0;
         hunter->fear++;
@@ -177,7 +178,7 @@ void hunter_take_action(Hunter* hunter){
             hunter_exit_simulation(hunter);
         }
         else{
-            int evidence_pos = hunter_check_evidence(hunter);
+            int evidence_pos = hunter_check_evidence(hunter); //Func not defined
             if(evidence_pos > -1){
                 clear_bit(&hunter->curr_room->evidence, evidence_pos);
                 set_bit(&hunter->case_file->collected, evidence_pos);
@@ -196,7 +197,7 @@ void hunter_take_action(Hunter* hunter){
         Room *popped_room;
         hunter_trail_pop(hunter, &popped_room);
 
-        hunter_move(hunter, popped_room); 
+        hunter_move(hunter, popped_room); //Func not defined
     }
     else if(!hunter->hasExited){
         //Select a random connected room
@@ -216,12 +217,17 @@ void hunter_take_action(Hunter* hunter){
         //      Add hunter pointer to target_room
         //      Set curr_room to target_room      
         //      Unlock mutexes
-        hunter_move(hunter, target_room);
+        hunter_move(hunter, target_room); //Func not defined
     }   
 }
 
+/**
+ * @brief Determines whether a ghost is present in the room with the hunter
+ * @param[in] hunter A pointer to the hunter of interest
+ * @return true or false depending on whether a ghost is present
+ */
 bool hunter_check_ghost(Hunter* hunter){
-    return false;
+    return hunter->curr_room->ghost != NULL;
 }
 
 bool hunter_in_exit(Hunter* hunter){
@@ -233,15 +239,22 @@ void hunter_check_exited(Hunter* hunter){
 bool hunter_check_victory(Hunter* hunter){
     return false;
 }
+
+/**
+ * @brief Determines hunter's fear or boredom has reached its max
+ * @param[in] hunter A pointer to the hunter of interest
+ * @return true or false depending on whether max emotions were reached
+ */
 bool hunter_check_emotions(Hunter* hunter){
-    return false;
+    return (hunter->boredom >= ENTITY_BOREDOM_MAX) || (hunter->fear >= HUNTER_FEAR_MAX);
 }
 int hunter_check_evidence(Hunter* hunter){
-    return 0;
+    return -1;
 }
 void hunter_move(Hunter* hunter, Room* target_room){
 
 }  
+
 void hunter_exit_simulation(Hunter* hunter){
     //Remove from room
     //Log exit reason
