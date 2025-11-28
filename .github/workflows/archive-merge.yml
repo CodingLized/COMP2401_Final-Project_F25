@@ -1,0 +1,32 @@
+name: Archive Merged Branch
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Get the branch name that was merged
+      - name: Extract merged branch name
+        run: |
+          echo "MERGED_BRANCH=$(echo ${{ github.event.head_commit.message }} | grep -oE 'Merge branch .+' | awk '{print $3}' | sed "s/'//g")" >> $GITHUB_ENV
+
+      # Create tar archive with branch name
+      - name: Create tar archive
+        run: |
+          tar -cvf "${{ env.MERGED_BRANCH }}.tar" .
+
+      # Upload artifact
+      - name: Upload archive
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.MERGED_BRANCH }}-archive
+          path: ${{ env.MERGED_BRANCH }}.tar
