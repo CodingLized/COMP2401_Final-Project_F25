@@ -6,6 +6,10 @@
 #include <pthread.h>
 #include <stdint.h>
 #include "helpers.h"
+#include "defs.h"
+
+
+
 
 // ---- House layout ----
 void house_populate_rooms(struct House* house) {
@@ -26,21 +30,69 @@ void house_populate_rooms(struct House* house) {
     room_init(house->rooms+11, "Garage", false);
     room_init(house->rooms+12, "Utility Room", false);
 
-    room_connect(house->rooms+0, house->rooms+1);    // Van - Hallway
-    room_connect(house->rooms+1, house->rooms+2);    // Hallway - Master Bedroom
-    room_connect(house->rooms+1, house->rooms+3);    // Hallway - Boy's Bedroom
-    room_connect(house->rooms+1, house->rooms+4);    // Hallway - Bathroom
-    room_connect(house->rooms+1, house->rooms+9);    // Hallway - Kitchen
-    room_connect(house->rooms+1, house->rooms+5);    // Hallway - Basement
-    room_connect(house->rooms+5, house->rooms+6);    // Basement - Basement Hallway
-    room_connect(house->rooms+6, house->rooms+7);    // Basement Hallway - Right Storage Room
-    room_connect(house->rooms+6, house->rooms+8);    // Basement Hallway - Left Storage Room
-    room_connect(house->rooms+9, house->rooms+10);   // Kitchen - Living Room
-    room_connect(house->rooms+9, house->rooms+11);   // Kitchen - Garage
-    room_connect(house->rooms+11, house->rooms+12);  // Garage - Utility Room
+    rooms_connect(house->rooms+0, house->rooms+1);    // Van - Hallway
+    rooms_connect(house->rooms+1, house->rooms+2);    // Hallway - Master Bedroom
+    rooms_connect(house->rooms+1, house->rooms+3);    // Hallway - Boy's Bedroom
+    rooms_connect(house->rooms+1, house->rooms+4);    // Hallway - Bathroom
+    rooms_connect(house->rooms+1, house->rooms+9);    // Hallway - Kitchen
+    rooms_connect(house->rooms+1, house->rooms+5);    // Hallway - Basement
+    rooms_connect(house->rooms+5, house->rooms+6);    // Basement - Basement Hallway
+    rooms_connect(house->rooms+6, house->rooms+7);    // Basement Hallway - Right Storage Room
+    rooms_connect(house->rooms+6, house->rooms+8);    // Basement Hallway - Left Storage Room
+    rooms_connect(house->rooms+9, house->rooms+10);   // Kitchen - Living Room
+    rooms_connect(house->rooms+9, house->rooms+11);   // Kitchen - Garage
+    rooms_connect(house->rooms+11, house->rooms+12);  // Garage - Utility Room
 
     house->starting_room = house->rooms; // Van is at index 0
 }
+
+//---- Bit manipulation functions ----
+
+/*
+    Desc: Sets the bit of a byte to 1. The position of the most significant bit is treated as 0 and the 
+          position of the least significant bit is treated as 7
+    in/out byte: A char that represents a byte of data
+    in pos: The position of the bit to be set
+
+    return error code
+*/
+void set_bit(EvidenceByte* byte, int pos){
+    if(byte == NULL){
+        return;
+    }
+    EvidenceByte pos_set = 0;
+    pos_set = 1 << (7 - pos);
+    *byte = *byte | pos_set;
+
+}
+
+/*
+    Desc: Reads the bit at position 'pos' of a byte. The position of the most significant bit is treated as 0 and the 
+          position of the least significant bit is treated as 7
+    in byte: A char that represents a byte of data
+    in pos: The position of the bit to be read
+
+    return error code
+
+*/
+int get_bit(const EvidenceByte* byte, int pos){
+    if(byte == NULL){
+        return -1;
+    }
+    return (int)(*byte & (1 << (7 - pos))) >> (7 - pos);
+}
+
+/**
+ * @brief Clears the bit at a particular position. The position of the most significant bit is treated as 0 and the 
+ *   position of the least significant bit is treated as 7
+ * @param[in,out] byte A char that represents a byte of data
+ * @param[in] pos The position of the bit to be clear
+ */
+
+void clear_bit(EvidenceByte* byte, int pos){
+    *byte = *byte & (~(1 << pos));
+}
+
 
 // ---- to_string functions ----
 const char* evidence_to_string(enum EvidenceType evidence) {
