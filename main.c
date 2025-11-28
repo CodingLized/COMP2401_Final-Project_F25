@@ -7,8 +7,8 @@
 
 //#define RUN_THREADS 1
 //#define TEST
-static void get_hunter_info(Hunter* h);
-static void run_single_thread(House* house, Ghost* ghost);
+//static void get_hunter_info(Hunter* h);
+static void run_single_thread(House* house);
 
 int main() {
 
@@ -103,14 +103,13 @@ int main() {
     */
 
     House house; 
-    Ghost ghost;
     char hunter_name[MAX_HUNTER_NAME];
     int hunter_id; 
     
     
     //Set up
     house_populate_rooms(&house);
-    ghost_init(&ghost, &house); 
+    ghost_init(&house); 
     #ifndef TEST
     HunterCollection* hc = &house.hunterCollection;
     hunter_collection_init(&hc);
@@ -152,7 +151,7 @@ int main() {
 
     #ifndef RUN_THREADS
 
-    //run_single_thread(&house, &ghost);
+    run_single_thread(&house);
 
     #endif
 
@@ -163,22 +162,21 @@ int main() {
     hunter_collection_cleanup(&house.hunterCollection);
 #endif
 #ifdef TEST
-    for(int i = 0; i < house.room_count; i++){
-        printf("%s initialized\n", house.rooms[i].name);
-    }
+    printf("Size of EvidenceByte %d\n", sizeof(EvidenceByte));
 #endif    
     return 0;
 
 }
 
-static void get_hunter_info(Hunter* h){}
+//static void get_hunter_info(Hunter* h){}
 
-static void run_single_thread(House* house, Ghost* ghost){
+static void run_single_thread(House* house){
     
-    bool hunters_done = false;
+    bool hunters_done = true; //Change
     bool ghost_done = false;
-
-    while(!hunters_done && !ghost_done){
+    
+    while(!hunters_done || !ghost_done){
+        /*
         //Go through each hunter action loop
         for(int i = 0; i < house->hunterCollection.size; i++){
             //Check hunter running
@@ -194,9 +192,10 @@ static void run_single_thread(House* house, Ghost* ghost){
                 hunters_done = !hunters_done && house->hunterCollection.hunters[i]->hasExited;
             }
         }
-
+        */
         //Go through ghost loop
-        ghost_take_action(ghost);
-        //Check ghost's hasExited
+        ghost_take_action(&house->ghost);
+        //Check whether ghost has exited
+        ghost_done = house->ghost.hasExited;
     }
 }

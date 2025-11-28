@@ -161,7 +161,7 @@ void room_init(Room* room, const char* name, bool is_exit);
 void rooms_connect(Room* a, Room* b); // Bidirectional connection
 
 //Initializers
-void ghost_init(Ghost* ghost, House* house);
+void ghost_init(House* house);
 void hunter_collection_init(HunterCollection* *hc);
 void hunter_init(House* house, const char* name, int id);
 void hunter_trail_init(Hunter* hunter);
@@ -169,7 +169,7 @@ void hunter_trail_init(Hunter* hunter);
 
 
 //Ghost Functions
-void ghost_check_hunter(Ghost* ghost);
+bool ghost_check_hunter(Ghost* ghost);
 void ghost_take_action(Ghost* ghost);
 void ghost_haunt(Ghost* ghost);
 void ghost_exit(Ghost* ghost);

@@ -32,6 +32,8 @@ void room_init(Room* room, const char* name, bool is_exit){
 
     room->ghost = NULL;
 
+    room->evidence = 0;
+
 
 
 }

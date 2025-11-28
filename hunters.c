@@ -20,7 +20,7 @@ void hunter_collection_init(HunterCollection* *hc){
  * @brief Finds the index of the pointer to a hunter in the hunters current room
  */
 int get_hunter_index(Hunter* hunter, Room* room){
-
+    return 0;
 }
 
 /**
@@ -38,7 +38,7 @@ void hunter_init(House* house, const char* name, int id){
     new_hunter->case_file = &house->case_file;
 
     //Give hunter a random device
-    select_rand_device(&new_hunter);
+    select_rand_device(new_hunter);
 
     new_hunter->fear = 0;
     new_hunter->boredom = 0;
@@ -50,7 +50,7 @@ void hunter_init(House* house, const char* name, int id){
     //Add hunter to house
     hunter_collection_add(new_hunter, house);
 
-    Hunter* *hunters = house->hunterCollection.hunters;
+    Hunter* *hunters = house->hunterCollection.hunters; //For convenience
     log_hunter_init(hunters[house->hunterCollection.size-1]->id, hunters[house->hunterCollection.size-1]->curr_room->name, hunters[house->hunterCollection.size-1]->name, hunters[house->hunterCollection.size-1]->device_type);
 }
 
@@ -148,7 +148,7 @@ void hunter_trail_clear(Hunter* hunter){
  * @brief Goes through one loop of actions for a hunter's turn
  * @param[in] hunter the Hunter structure that will take action
  */
-void huntner_take_action(Hunter* hunter){
+void hunter_take_action(Hunter* hunter){
     //Rmr to check if hunter is still in sim
     
     if(hunter_check_ghost(hunter)){
@@ -221,23 +221,23 @@ void huntner_take_action(Hunter* hunter){
 }
 
 bool hunter_check_ghost(Hunter* hunter){
-
+    return false;
 }
 
 bool hunter_in_exit(Hunter* hunter){
-
+    return false;
 }
 void hunter_check_exited(Hunter* hunter){
 
 }
 bool hunter_check_victory(Hunter* hunter){
-
+    return false;
 }
 bool hunter_check_emotions(Hunter* hunter){
-
+    return false;
 }
-bool hunter_check_evidence(Hunter* hunter){
-
+int hunter_check_evidence(Hunter* hunter){
+    return 0;
 }
 void hunter_move(Hunter* hunter, Room* target_room){
 
