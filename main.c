@@ -83,7 +83,9 @@ int main() {
         -[] Finish hunter_take_action
             -[v] Check whether hunter has exited before taking action
             -[IP] Test checking of whether all hunters are done
-            -[] 
+            -[] Hunter move 2
+                -[]room_hunter_add and move 1
+            -[] Ghost check hunter
         -[] Do ghost_take_action
 
 
@@ -104,9 +106,9 @@ int main() {
 
     /*
     ----ISSUES----
-    -[] Ghost moves out of room even though there are hunters there
-    -[] Hunters loop forever (they never exit)
-    -[] Hunters seem to respond late to ghost actions
+    -[] Ghost moves out of room even though there are hunters there 3
+    -[v] Hunters loop forever (they never exit) 1
+    -[v] Hunters seem to respond late to ghost actions 2
     
     */
 
@@ -181,7 +183,7 @@ int main() {
 
 static void run_single_thread(House* house){
     
-    bool hunters_done = true; //Change
+    bool hunters_done = false; 
     bool ghost_done = false;
     
     while(!hunters_done || !ghost_done){
@@ -192,8 +194,9 @@ static void run_single_thread(House* house){
             //Check whether hunter is in sim before taking action
             if(!hunter->hasExited){
                 hunter_take_action(house->hunterCollection.hunters[i]);
-                sleep(1);
+                //sleep(1);
             }
+
             
             
         }
@@ -206,12 +209,15 @@ static void run_single_thread(House* house){
                 hunters_done = !hunters_done && house->hunterCollection.hunters[i]->hasExited;
             }
         }
+
+        printf("All hunters done?: %d\n", hunters_done);
+
         //Go through ghost loop
         if(!ghost_done){
             ghost_take_action(&house->ghost);
             //Check whether ghost has exited
             ghost_done = house->ghost.hasExited;
-            sleep(1);
+            //sleep(1);
         }
         
     }

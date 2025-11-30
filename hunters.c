@@ -151,8 +151,9 @@ void hunter_trail_clear(Hunter* hunter){
  */
 void hunter_take_action(Hunter* hunter){
     //Rmr to check if hunter is still in sim
-    printf("Hunter %s [Fear=%d, Boredom=%d, Room=%s]\n", hunter->name, hunter->fear, hunter->boredom, hunter->curr_room->name);
+    
     if(hunter_check_ghost(hunter)){
+        printf("Hunter notices ghost\n");
         hunter->boredom = 0;
         hunter->fear++;
 
@@ -165,6 +166,7 @@ void hunter_take_action(Hunter* hunter){
         hunter_trail_clear(hunter);
 
         if(hunter_check_victory(hunter)){
+            hunter->exit_reason = LR_EVIDENCE;
             hunter_exit_simulation(hunter);
         }
         else{
@@ -204,21 +206,10 @@ void hunter_take_action(Hunter* hunter){
         int room_index = rand_int_threadsafe(0, hunter->curr_room->connections_no);
         Room* target_room = hunter->curr_room->connected_rooms[room_index];
 
-        //--Define in move
-        //If target room is full, return (move failed)
-        //Otherwise
-        //      first_mutex = Compare names of target room and curr_room to determine which mutex to wait for
-        //      second_mutex = Other mutex        
-        //      wait_for_mutex(first_mutex) //Code sits here till mutex is unlocked
-        //      lock_mutex(first_mutex)
-        //      wait_for_mutex(second_mutex) //Code sits here till mutex is unlocked
-        //      lock_mutex(second_mutex)
-        //      Remove hunter pointer from curr_room
-        //      Add hunter pointer to target_room
-        //      Set curr_room to target_room      
-        //      Unlock mutexes
+        
         hunter_move(hunter, target_room); //Func not defined
-    }   
+    }
+    printf("Hunter %s [Fear=%d, Boredom=%d, Room=%s]\n", hunter->name, hunter->fear, hunter->boredom, hunter->curr_room->name);   
 }
 
 /**
@@ -237,6 +228,11 @@ void hunter_check_exited(Hunter* hunter){
 
 }
 bool hunter_check_victory(Hunter* hunter){
+    //
+    
+    
+    
+    
     return false;
 }
 
@@ -246,19 +242,80 @@ bool hunter_check_victory(Hunter* hunter){
  * @return true or false depending on whether max emotions were reached
  */
 bool hunter_check_emotions(Hunter* hunter){
-    return (hunter->boredom >= ENTITY_BOREDOM_MAX) || (hunter->fear >= HUNTER_FEAR_MAX);
+    if(hunter->boredom >= ENTITY_BOREDOM_MAX){
+        hunter->exit_reason = LR_BORED;
+        return true;
+    }
+    else if(hunter->fear >= HUNTER_FEAR_MAX){
+        hunter->exit_reason = LR_AFRAID;
+        return true;
+    }
+    return false;
 }
 int hunter_check_evidence(Hunter* hunter){
     return -1;
 }
 void hunter_move(Hunter* hunter, Room* target_room){
+    //--Define in move
+        //If target room is full, return (move failed)
+        //Otherwise
+        //      first_mutex = Compare names of target room and curr_room to determine which mutex to wait for
+        //      second_mutex = Other mutex        
+        //      wait_for_mutex(first_mutex) //Code sits here till mutex is unlocked
+        //      lock_mutex(first_mutex)
+        //      wait_for_mutex(second_mutex) //Code sits here till mutex is unlocked
+        //      lock_mutex(second_mutex)
+        //      Remove hunter pointer from curr_room
+        //      Add hunter pointer to target_room
+        //      Set curr_room to target_room      
+        //      Unlock mutexes
+
+        sem_t *first_mutex;
+        sem_t *second_mutex;
+
+        int name_cmp = strncmp(hunter->curr_room->name, target_room->name, MAX_ROOM_NAME); //Compares the names of both rooms alphabetically 
+        if(name_cmp > 0){
+            first_mutex = &hunter->curr_room->mutex;
+            second_mutex = &target_room->mutex;
+        }else{
+            first_mutex = &target_room->mutex;
+            second_mutex = &hunter->curr_room->mutex;
+        }    
+
+        sem_wait(first_mutex);
+
+        sem_wait(second_mutex);
+        
+        bool success = room_add_hunter(target_room, hunter);
+
+        if(success){
+            log_move(hunter->id, hunter->boredom, hunter->fear, hunter->curr_room->name, target_room->name, hunter->device_type);
+            room_remove_hunter(hunter->curr_room, hunter);
+            hunter->curr_room = target_room;
+            
+        }
+        
+        //Unlock mutexes
+        sem_post(first_mutex);
+
+        sem_post(second_mutex);
 
 }  
 
+
+/**
+ * @brief Removes a hunter from the simulation, setting their exit reason
+ * @param[out] hunter The hunter structure to be removed from the simulation
+ * @param[in] reason The exit reason of the hunter
+ */
 void hunter_exit_simulation(Hunter* hunter){
     //Remove from room
     //Log exit reason
     //Set hasExited to true
+    room_remove_hunter(hunter->curr_room, hunter); 
+    hunter->hasExited = true;
+    log_exit(hunter->id, hunter->boredom, hunter->fear, hunter->curr_room->name, hunter->device_type, hunter->exit_reason);
+    hunter->curr_room = NULL;
 }
 
 /**
