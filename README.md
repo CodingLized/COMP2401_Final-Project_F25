@@ -37,4 +37,4 @@
 
 
 
-- The makefile contains additional labels used for debugging which causes all files to always recompile. These labels should be ignored.
+- Implemented a 5% that the hunter returns to exit if no evidence is found

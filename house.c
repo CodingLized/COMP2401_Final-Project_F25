@@ -78,9 +78,10 @@ void room_remove_hunter(Room* room, Hunter* hunter){
 
         room->hunter_no--;
     }
-    else{//No need to loop if there's only one hunter. A future add to the hunter array will overwrite the hunter pointer
+    else if (room->hunter_no == 1){//No need to loop if there's only one hunter. A future add to the hunter array will overwrite the hunter pointer
         room->hunter_no--;
     }
+    //Do nothing if room->hunter_no == 0, i.e. hunter was only initialized in the Van.
 }
 
 /**

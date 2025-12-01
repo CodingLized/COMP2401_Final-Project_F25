@@ -120,7 +120,7 @@ void hunter_trail_push(Hunter* hunter){
  */
 void hunter_trail_pop(Hunter* hunter, Room* *room){
     RoomNode* popped = hunter->trail.top;
-
+    printf("Hunter (%d) popping a room\n", hunter->id);
     if(popped == NULL){
         *room = NULL;
         return;
@@ -128,6 +128,7 @@ void hunter_trail_pop(Hunter* hunter, Room* *room){
 
     *room = popped->data;
     hunter->trail.top = popped->previous;
+    printf("Popped room = %s\n", popped->data->name);
     free(popped);
 
 
@@ -180,34 +181,46 @@ void hunter_take_action(Hunter* hunter){
             hunter_exit_simulation(hunter);
         }
         else{
-            int evidence_pos = hunter_check_evidence(hunter); //Func not defined
+            //int evidence_pos = -1;
+            int evidence_pos = hunter_check_evidence(hunter); 
             if(evidence_pos > -1){
-                clear_bit(&hunter->curr_room->evidence, evidence_pos);
-                set_bit(&hunter->case_file->collected, evidence_pos);
+                printf("Evidence found by Hunter (%d)\n", hunter->id);
+                clear_bit(&hunter->curr_room->evidence, evidence_pos); //Lock mutex before setting
+                set_bit(&hunter->case_file->collected, evidence_pos); 
+                printf("CASEFILE: %d\n", hunter->case_file->collected);
                 hunter->return_to_exit = true;
             }
             else{
-                //A 10% chance that the hunter will return to the exit
-                int chance = rand_int_threadsafe(1, 11);
+                //A 5% chance that the hunter will return to the exit
+                int chance = rand_int_threadsafe(1, 21);
                 if(chance == 1){
                     hunter->return_to_exit = true;
                 }
             }
         }
     }
-    if(hunter->return_to_exit){
+    if(hunter->return_to_exit && !hunter->hasExited){
         Room *popped_room;
         hunter_trail_pop(hunter, &popped_room);
-
-        hunter_move(hunter, popped_room); //Func not defined
+        if(popped_room != NULL){
+            hunter_move(hunter, popped_room); 
+        }
+        
     }
     else if(!hunter->hasExited){
         //Select a random connected room
-        int room_index = rand_int_threadsafe(0, hunter->curr_room->connections_no);
-        Room* target_room = hunter->curr_room->connected_rooms[room_index];
+        Room* target_room;
+        int room_index;
+        do{
+            room_index = rand_int_threadsafe(0, hunter->curr_room->connections_no);
+            target_room = hunter->curr_room->connected_rooms[room_index];
+            printf("Target room address: %ld\n", (long int)target_room);
+        }
+        while(target_room == NULL);
+        
 
         
-        hunter_move(hunter, target_room); //Func not defined
+        hunter_move(hunter, target_room); 
     }
     printf("Hunter %s [Fear=%d, Boredom=%d, Room=%s]\n", hunter->name, hunter->fear, hunter->boredom, hunter->curr_room->name);   
 }
@@ -222,7 +235,7 @@ bool hunter_check_ghost(Hunter* hunter){
 }
 
 bool hunter_in_exit(Hunter* hunter){
-    return false;
+    return hunter->curr_room->isExit;
 }
 void hunter_check_exited(Hunter* hunter){
 
@@ -252,8 +265,29 @@ bool hunter_check_emotions(Hunter* hunter){
     }
     return false;
 }
+
+/**
+ * @brief Checks to see if the hunter device type matches any evidence bit in the room
+ * @param[in] hunter The hunter checking the room evidence
+ * @return An integer greater than zero of there is a match
+ */
 int hunter_check_evidence(Hunter* hunter){
-    return -1;
+    EvidenceByte device_to_evidence = (EvidenceByte)hunter->device_type;
+    int device_bit_index;
+
+    for(int i = 0; i < 8; i++){//Get the index of the bit that is set for the device
+        if(get_bit(&device_to_evidence, i)){
+            device_bit_index = i;
+            break;
+        }
+    }
+
+    if(get_bit(&hunter->curr_room->evidence, device_bit_index)){//Compare device with room evidence
+        return device_bit_index;
+    } 
+    printf("Hunter (%d): No evidence found\n", hunter->id);
+    return -1; //There isn't a match
+    
 }
 void hunter_move(Hunter* hunter, Room* target_room){
     //--Define in move
@@ -277,29 +311,36 @@ void hunter_move(Hunter* hunter, Room* target_room){
         if(name_cmp > 0){
             first_mutex = &hunter->curr_room->mutex;
             second_mutex = &target_room->mutex;
-        }else{
+        }else if(name_cmp < 0){
             first_mutex = &target_room->mutex;
             second_mutex = &hunter->curr_room->mutex;
+        }
+        else{
+            //Do nothing if it's the same room
+            return;
         }    
-
-        sem_wait(first_mutex);
-
-        sem_wait(second_mutex);
         
+        /*
+        sem_wait(first_mutex);
+        printf("Waiting for sem1..\n");
+        sem_wait(second_mutex);
+        printf("Waiting for sem2..\n");
+        */
         bool success = room_add_hunter(target_room, hunter);
 
         if(success){
             log_move(hunter->id, hunter->boredom, hunter->fear, hunter->curr_room->name, target_room->name, hunter->device_type);
             room_remove_hunter(hunter->curr_room, hunter);
             hunter->curr_room = target_room;
-            
+            hunter_trail_push(hunter);
         }
         
         //Unlock mutexes
+        /*
         sem_post(first_mutex);
 
         sem_post(second_mutex);
-
+        */
 }  
 
 

@@ -83,11 +83,13 @@ int main() {
         -[] Finish hunter_take_action
             -[v] Check whether hunter has exited before taking action
             -[IP] Test checking of whether all hunters are done
-            -[] Hunter move 2
-                -[]room_hunter_add and move 1
-            -[] Ghost check hunter
-        -[] Do ghost_take_action
-
+            -[v] Hunter move 2
+                -[v]room_hunter_add and move 1
+            
+            -[] hunter_check_evidence
+        
+        -[v] Do ghost_take_action
+            -[v] Ghost check hunter
 
 
 
@@ -106,9 +108,8 @@ int main() {
 
     /*
     ----ISSUES----
-    -[] Ghost moves out of room even though there are hunters there 3
-    -[v] Hunters loop forever (they never exit) 1
-    -[v] Hunters seem to respond late to ghost actions 2
+    -[v] Ghost moves out of room even though there are hunters there 3
+    -[] A hunter somehow becomes one of the Van's connected rooms?
     
     */
 
@@ -207,6 +208,10 @@ static void run_single_thread(House* house){
             }
             else{
                 hunters_done = !hunters_done && house->hunterCollection.hunters[i]->hasExited;
+            }
+
+            if(!hunters_done){
+                break;
             }
         }
 
