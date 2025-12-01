@@ -5,6 +5,10 @@
 #include "defs.h"
 #include "helpers.h"
 
+#include <unistd.h>
+
+
+
 //#define RUN_THREADS 1
 //#define TEST
 //static void get_hunter_info(Hunter* h);
@@ -77,10 +81,15 @@ int main() {
             -Go through ghost loop
 
         -[] Finish hunter_take_action
-            -[] Check whether hunter has exited before taking action
-            -[] Test checking of whether all hunters are done
-        -[] Do ghost_take_action
-
+            -[v] Check whether hunter has exited before taking action
+            -[IP] Test checking of whether all hunters are done
+            -[v] Hunter move 2
+                -[v]room_hunter_add and move 1
+            
+            -[] hunter_check_evidence
+        
+        -[v] Do ghost_take_action
+            -[v] Ghost check hunter
 
 
 
@@ -93,12 +102,14 @@ int main() {
 
     -[]CLEANUP
         -Destroy semaphores
-    
+
+        -Remove unnecassary labels in makefile
     */
 
     /*
     ----ISSUES----
-    
+    -[v] Ghost moves out of room even though there are hunters there 3
+    -[] A hunter somehow becomes one of the Van's connected rooms?
     
     */
 
@@ -106,7 +117,8 @@ int main() {
     char hunter_name[MAX_HUNTER_NAME];
     int hunter_id; 
     
-    
+    //pthread_t ghost_thread;
+
     //Set up
     house_populate_rooms(&house);
     ghost_init(&house); 
@@ -172,15 +184,21 @@ int main() {
 
 static void run_single_thread(House* house){
     
-    bool hunters_done = true; //Change
+    bool hunters_done = false; 
     bool ghost_done = false;
     
     while(!hunters_done || !ghost_done){
-        /*
+        
         //Go through each hunter action loop
         for(int i = 0; i < house->hunterCollection.size; i++){
-            //Check hunter running
-            hunter_take_action(house->hunterCollection.hunters[i]);
+            Hunter* hunter = house->hunterCollection.hunters[i];
+            //Check whether hunter is in sim before taking action
+            if(!hunter->hasExited){
+                hunter_take_action(house->hunterCollection.hunters[i]);
+                //sleep(1);
+            }
+
+            
             
         }
         //Check all hunters' hasExited
@@ -191,11 +209,21 @@ static void run_single_thread(House* house){
             else{
                 hunters_done = !hunters_done && house->hunterCollection.hunters[i]->hasExited;
             }
+
+            if(!hunters_done){
+                break;
+            }
         }
-        */
+
+        printf("All hunters done?: %d\n", hunters_done);
+
         //Go through ghost loop
-        ghost_take_action(&house->ghost);
-        //Check whether ghost has exited
-        ghost_done = house->ghost.hasExited;
+        if(!ghost_done){
+            ghost_take_action(&house->ghost);
+            //Check whether ghost has exited
+            ghost_done = house->ghost.hasExited;
+            //sleep(1);
+        }
+        
     }
 }

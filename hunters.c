@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
 /**
  * @brief Initializes a dynamic array of hunters
  * @param[out] hc The dynamic hunter array to be initialized
@@ -119,7 +120,7 @@ void hunter_trail_push(Hunter* hunter){
  */
 void hunter_trail_pop(Hunter* hunter, Room* *room){
     RoomNode* popped = hunter->trail.top;
-
+    printf("Hunter (%d) popping a room\n", hunter->id);
     if(popped == NULL){
         *room = NULL;
         return;
@@ -127,6 +128,7 @@ void hunter_trail_pop(Hunter* hunter, Room* *room){
 
     *room = popped->data;
     hunter->trail.top = popped->previous;
+    printf("Popped room = %s\n", popped->data->name);
     free(popped);
 
 
@@ -152,6 +154,7 @@ void hunter_take_action(Hunter* hunter){
     //Rmr to check if hunter is still in sim
     
     if(hunter_check_ghost(hunter)){
+        printf("Hunter notices ghost\n");
         hunter->boredom = 0;
         hunter->fear++;
 
@@ -164,6 +167,7 @@ void hunter_take_action(Hunter* hunter){
         hunter_trail_clear(hunter);
 
         if(hunter_check_victory(hunter)){
+            hunter->exit_reason = LR_EVIDENCE;
             hunter_exit_simulation(hunter);
         }
         else{
@@ -177,33 +181,116 @@ void hunter_take_action(Hunter* hunter){
             hunter_exit_simulation(hunter);
         }
         else{
-            int evidence_pos = hunter_check_evidence(hunter);
+            //int evidence_pos = -1;
+            int evidence_pos = hunter_check_evidence(hunter); 
             if(evidence_pos > -1){
-                clear_bit(&hunter->curr_room->evidence, evidence_pos);
-                set_bit(&hunter->case_file->collected, evidence_pos);
+                printf("Evidence found by Hunter (%d)\n", hunter->id);
+                clear_bit(&hunter->curr_room->evidence, evidence_pos); //Lock mutex before setting
+                set_bit(&hunter->case_file->collected, evidence_pos); 
+                printf("CASEFILE: %d\n", hunter->case_file->collected);
                 hunter->return_to_exit = true;
             }
             else{
-                //A 10% chance that the hunter will return to the exit
-                int chance = rand_int_threadsafe(1, 11);
+                //A 5% chance that the hunter will return to the exit
+                int chance = rand_int_threadsafe(1, 21);
                 if(chance == 1){
                     hunter->return_to_exit = true;
                 }
             }
         }
     }
-    if(hunter->return_to_exit){
+    if(hunter->return_to_exit && !hunter->hasExited){
         Room *popped_room;
         hunter_trail_pop(hunter, &popped_room);
-
-        hunter_move(hunter, popped_room); 
+        if(popped_room != NULL){
+            hunter_move(hunter, popped_room); 
+        }
+        
     }
     else if(!hunter->hasExited){
         //Select a random connected room
-        int room_index = rand_int_threadsafe(0, hunter->curr_room->connections_no);
-        Room* target_room = hunter->curr_room->connected_rooms[room_index];
+        Room* target_room;
+        int room_index;
+        do{
+            room_index = rand_int_threadsafe(0, hunter->curr_room->connections_no);
+            target_room = hunter->curr_room->connected_rooms[room_index];
+            printf("Target room address: %ld\n", (long int)target_room);
+        }
+        while(target_room == NULL);
+        
 
-        //--Define in move
+        
+        hunter_move(hunter, target_room); 
+    }
+    printf("Hunter %s [Fear=%d, Boredom=%d, Room=%s]\n", hunter->name, hunter->fear, hunter->boredom, hunter->curr_room->name);   
+}
+
+/**
+ * @brief Determines whether a ghost is present in the room with the hunter
+ * @param[in] hunter A pointer to the hunter of interest
+ * @return true or false depending on whether a ghost is present
+ */
+bool hunter_check_ghost(Hunter* hunter){
+    return hunter->curr_room->ghost != NULL;
+}
+
+bool hunter_in_exit(Hunter* hunter){
+    return hunter->curr_room->isExit;
+}
+void hunter_check_exited(Hunter* hunter){
+
+}
+bool hunter_check_victory(Hunter* hunter){
+    //
+    
+    
+    
+    
+    return false;
+}
+
+/**
+ * @brief Determines hunter's fear or boredom has reached its max
+ * @param[in] hunter A pointer to the hunter of interest
+ * @return true or false depending on whether max emotions were reached
+ */
+bool hunter_check_emotions(Hunter* hunter){
+    if(hunter->boredom >= ENTITY_BOREDOM_MAX){
+        hunter->exit_reason = LR_BORED;
+        return true;
+    }
+    else if(hunter->fear >= HUNTER_FEAR_MAX){
+        hunter->exit_reason = LR_AFRAID;
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief Checks to see if the hunter device type matches any evidence bit in the room
+ * @param[in] hunter The hunter checking the room evidence
+ * @return An integer greater than zero of there is a match
+ */
+int hunter_check_evidence(Hunter* hunter){
+    EvidenceByte device_to_evidence = (EvidenceByte)hunter->device_type;
+    int device_bit_index;
+
+    for(int i = 0; i < 8; i++){//Get the index of the bit that is set for the device
+        if(get_bit(&device_to_evidence, i)){
+            device_bit_index = i;
+            break;
+        }
+    }
+
+    if(get_bit(&hunter->curr_room->evidence, device_bit_index)){//Compare device with room evidence
+        return device_bit_index;
+    } 
+    printf("Hunter (%d): No evidence found\n", hunter->id);
+    return -1; //There isn't a match
+    
+}
+void hunter_move(Hunter* hunter, Room* target_room){
+    //--Define in move
         //If target room is full, return (move failed)
         //Otherwise
         //      first_mutex = Compare names of target room and curr_room to determine which mutex to wait for
@@ -216,36 +303,60 @@ void hunter_take_action(Hunter* hunter){
         //      Add hunter pointer to target_room
         //      Set curr_room to target_room      
         //      Unlock mutexes
-        hunter_move(hunter, target_room);
-    }   
-}
 
-bool hunter_check_ghost(Hunter* hunter){
-    return false;
-}
+        sem_t *first_mutex;
+        sem_t *second_mutex;
 
-bool hunter_in_exit(Hunter* hunter){
-    return false;
-}
-void hunter_check_exited(Hunter* hunter){
+        int name_cmp = strncmp(hunter->curr_room->name, target_room->name, MAX_ROOM_NAME); //Compares the names of both rooms alphabetically 
+        if(name_cmp > 0){
+            first_mutex = &hunter->curr_room->mutex;
+            second_mutex = &target_room->mutex;
+        }else if(name_cmp < 0){
+            first_mutex = &target_room->mutex;
+            second_mutex = &hunter->curr_room->mutex;
+        }
+        else{
+            //Do nothing if it's the same room
+            return;
+        }    
+        
+        /*
+        sem_wait(first_mutex);
+        printf("Waiting for sem1..\n");
+        sem_wait(second_mutex);
+        printf("Waiting for sem2..\n");
+        */
+        bool success = room_add_hunter(target_room, hunter);
 
-}
-bool hunter_check_victory(Hunter* hunter){
-    return false;
-}
-bool hunter_check_emotions(Hunter* hunter){
-    return false;
-}
-int hunter_check_evidence(Hunter* hunter){
-    return 0;
-}
-void hunter_move(Hunter* hunter, Room* target_room){
+        if(success){
+            log_move(hunter->id, hunter->boredom, hunter->fear, hunter->curr_room->name, target_room->name, hunter->device_type);
+            room_remove_hunter(hunter->curr_room, hunter);
+            hunter->curr_room = target_room;
+            hunter_trail_push(hunter);
+        }
+        
+        //Unlock mutexes
+        /*
+        sem_post(first_mutex);
 
+        sem_post(second_mutex);
+        */
 }  
+
+
+/**
+ * @brief Removes a hunter from the simulation, setting their exit reason
+ * @param[out] hunter The hunter structure to be removed from the simulation
+ * @param[in] reason The exit reason of the hunter
+ */
 void hunter_exit_simulation(Hunter* hunter){
     //Remove from room
     //Log exit reason
     //Set hasExited to true
+    room_remove_hunter(hunter->curr_room, hunter); 
+    hunter->hasExited = true;
+    log_exit(hunter->id, hunter->boredom, hunter->fear, hunter->curr_room->name, hunter->device_type, hunter->exit_reason);
+    hunter->curr_room = NULL;
 }
 
 /**

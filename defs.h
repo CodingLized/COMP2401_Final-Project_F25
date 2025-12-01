@@ -160,12 +160,13 @@ int get_hunter_index(Hunter* hunter, Room* room);
 void room_init(Room* room, const char* name, bool is_exit);
 void rooms_connect(Room* a, Room* b); // Bidirectional connection
 
-//Initializers
+//Initializers and room management
 void ghost_init(House* house);
 void hunter_collection_init(HunterCollection* *hc);
 void hunter_init(House* house, const char* name, int id);
 void hunter_trail_init(Hunter* hunter);
-
+bool room_add_hunter(Room* room, Hunter* hunter);
+void room_remove_hunter(Room* room, Hunter* hunter);
 
 
 //Ghost Functions
@@ -190,11 +191,10 @@ void select_rand_device(Hunter* hunter);
 
 void hunter_trail_push(Hunter* hunter);
 void hunter_trail_pop(Hunter* hunter, Room* *room);
-
 void hunter_collection_add(Hunter* hunter, House* house);
 
 //Heap Cleanup
 void hunter_collection_cleanup(HunterCollection* hc);
-
+void house_destroy_mutexes(House* house);
 
 #endif // DEFS_H

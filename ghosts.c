@@ -1,4 +1,3 @@
-
 #include "defs.h"
 #include "helpers.h"
 #include <stdio.h>
@@ -75,7 +74,7 @@ void ghost_take_action(Ghost* ghost){
 }
 
 bool ghost_check_hunter(Ghost* ghost){
-    return false;
+    return ghost->room->hunter_no > 0;
 }
 
 /**
