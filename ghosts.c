@@ -109,7 +109,7 @@ void ghost_haunt(Ghost* ghost){
     }
 
     if(fail_count > 20){
-        printf("Evidence not set. All evidence is probably here.\n");
+        //printf("Evidence not set. All evidence is probably here.\n");
     }
     else{
         set_bit(&ghost->room->evidence, rand_evidence_pos);
@@ -117,10 +117,8 @@ void ghost_haunt(Ghost* ghost){
         if(get_bit(&ghost->room->evidence, rand_evidence_pos)){
             printf("Evidence has been set successfully.\n");
             printf("Current Room [%s] evidence: ", ghost->room->name);
-            for(int i = 0; i < (sizeof(EvidenceByte)*8); i++){
-                printf("%d", get_bit(&ghost->room->evidence, i));
-            }
-            printf("\n");
+            print_byte(&ghost->room->evidence);
+            
         }
     }
     

@@ -35,6 +35,7 @@ typedef struct HunterCollection HunterCollection;
 
 
 
+
 enum LogReason {
     LR_EVIDENCE = 0,
     LR_BORED = 1,
@@ -155,7 +156,10 @@ struct House {
 void set_bit(EvidenceByte* byte, int pos);
 int get_bit(const EvidenceByte* byte, int pos);
 void clear_bit(EvidenceByte* byte, int pos);
+void print_byte(EvidenceByte* byte);
 int get_hunter_index(Hunter* hunter, Room* room);
+
+void display_results(House* house);
 
 void room_init(Room* room, const char* name, bool is_exit);
 void rooms_connect(Room* a, Room* b); // Bidirectional connection
@@ -187,7 +191,7 @@ int hunter_check_evidence(Hunter* hunter);
 void hunter_move(Hunter* hunter, Room* target_room);  
 void hunter_exit_simulation(Hunter* hunter);
 
-void select_rand_device(Hunter* hunter);
+void select_rand_device(Hunter* hunter, bool swap);
 
 void hunter_trail_push(Hunter* hunter);
 void hunter_trail_pop(Hunter* hunter, Room* *room);

@@ -92,4 +92,23 @@ void house_destroy_mutexes(House* house){
     for(int i = 0; i < house->room_count; i++){
         sem_destroy(&house->rooms[i].mutex);
     }
+    sem_destroy(&house->case_file.mutex);
+}
+
+void display_results(House* house){
+    printf("-------RESULTS-------\n");
+    printf("Hunter Exit Reasons\n");
+    for(int i = 0; i < house->hunterCollection.size; i++){
+        printf("Hunter (%d) : %s\n", house->hunterCollection.hunters[i]->id, exit_reason_to_string(house->hunterCollection.hunters[i]->exit_reason));
+    }
+    /*
+    printf("Evidence found\n");
+    for(int i = 0; i < 8; i++){
+        if(get_bit(house->case_file.collected, i)){
+            printf("%s\n", evidence_to_string((EvidenceType)(1 << (8-i))));
+        }
+    }
+    */
+    printf("Ghost type: %s\n", ghost_to_string(house->ghost.type));
+    printf("Hunters guessed: %s\n", ghost_to_string((GhostType)house->case_file.collected));
 }

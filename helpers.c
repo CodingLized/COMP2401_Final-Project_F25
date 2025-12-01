@@ -94,6 +94,14 @@ void clear_bit(EvidenceByte* byte, int pos){
 }
 
 
+void print_byte(EvidenceByte* byte){
+    for(int i = 0; i < (sizeof(EvidenceByte)*8); i++){
+        printf("%d", get_bit(byte, i));
+    }
+    printf("\n");
+        
+}
+
 // ---- to_string functions ----
 const char* evidence_to_string(enum EvidenceType evidence) {
     switch (evidence) {

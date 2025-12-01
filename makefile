@@ -1,3 +1,4 @@
+SOURCE_FILES = main.c ghosts.c house.c hunters.c helpers.c 
 OBJECT_FILES = main.o ghosts.o hunters.o house.o helpers.o
 HEADER_FILES = defs.h helpers.h
 COMPILE_OPTS = -Wall -g -c
@@ -22,5 +23,11 @@ helpers.o: helpers.c $(HEADER_FILES)
 
 clean:
 	rm -f $(OBJECT_FILES)
+
+#Additional labels used in development
+
 clean-full:
-	rm -f *.csv $(OBJECT_FILES) finalProject 
+	rm -f *.csv $(OBJECT_FILES) finalProject 	
+	
+archive:
+	tar -cvf final_project.tar $(SOURCE_FILES) $(HEADER_FILES) makefile README.md validate_logs.py

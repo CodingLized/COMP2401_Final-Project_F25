@@ -9,11 +9,16 @@
 
 
 
-//#define RUN_THREADS 1
+#define RUN_THREADS 1
 //#define TEST
 //static void get_hunter_info(Hunter* h);
-static void run_single_thread(House* house);
 
+#ifndef RUN_THREADS
+static void run_single_thread(House* house);
+#endif
+
+static void* run_ghost_thread(void*);
+static void* run_hunter_thread(void*);
 int main() {
 
     /*
@@ -64,14 +69,14 @@ int main() {
     -[TN]hunter_trail_pop     
     -[TN]hunter_trail_clear   
     -[IP]hunter_take_action
-    -[]hunter_check_ghost
-    -[]hunter_in_exit
-    -[]hunter_check_exited
-    -[]hunter_check_victory
-    -[]hunter_check_emotions
-    -[]hunter_check_evidence
-    -[]hunter_move
-    -[]hunter_exit_simulation
+    -[v]hunter_check_ghost
+    -[v]hunter_in_exit
+    -[v]hunter_check_exited
+    -[v]hunter_check_victory
+    -[v]hunter_check_emotions
+    -[v]hunter_check_evidence
+    -[v]hunter_move
+    -[v]hunter_exit_simulation
 
 
     run_single_thread[]
@@ -117,15 +122,21 @@ int main() {
     char hunter_name[MAX_HUNTER_NAME];
     int hunter_id; 
     
-    //pthread_t ghost_thread;
+    pthread_t ghost_thread;
+
+
 
     //Set up
     house_populate_rooms(&house);
     ghost_init(&house); 
+
+    house.case_file.collected = 0;
+    house.case_file.solved = false;
     #ifndef TEST
     HunterCollection* hc = &house.hunterCollection;
     hunter_collection_init(&hc);
 
+    
 
     //Hunter info input loop
     while(true){  
@@ -153,10 +164,22 @@ int main() {
 
     }
 
+    pthread_t hunter_threads[house.hunterCollection.size];
+
     #ifdef RUN_THREADS
     //Create ghost thread
-
+    pthread_create(&ghost_thread, NULL, run_ghost_thread, ((void*)&house.ghost));
     //Create hunter threads
+    for(int i=0; i < house.hunterCollection.size; i++){
+        pthread_create(&hunter_threads[i], NULL, run_hunter_thread, ((void*)house.hunterCollection.hunters[i]));
+    }
+
+    //Wait for threads to finish
+    pthread_join(ghost_thread, NULL);
+    
+    for(int i=0; i < house.hunterCollection.size; i++){
+        pthread_join(hunter_threads[i], NULL);
+    }
     
     #endif
 
@@ -169,9 +192,10 @@ int main() {
 
     
 
-    //display_results(&house);
+    display_results(&house);
 
     hunter_collection_cleanup(&house.hunterCollection);
+    house_destroy_mutexes(&house);
 #endif
 #ifdef TEST
     printf("Size of EvidenceByte %d\n", sizeof(EvidenceByte));
@@ -182,6 +206,7 @@ int main() {
 
 //static void get_hunter_info(Hunter* h){}
 
+#ifndef RUN_THREADS
 static void run_single_thread(House* house){
     
     bool hunters_done = false; 
@@ -227,3 +252,21 @@ static void run_single_thread(House* house){
         
     }
 }
+#endif
+
+#ifdef RUN_THREADS
+static void* run_ghost_thread(void* ghost){
+    while(!((Ghost*)ghost)->hasExited){
+        ghost_take_action(((Ghost*)ghost));
+    }
+    return NULL;
+}
+
+static void* run_hunter_thread(void* hunter){
+    while(!((Hunter*)hunter)->hasExited){
+        hunter_take_action(((Hunter*)hunter));
+    }
+
+    return NULL;
+}
+#endif
